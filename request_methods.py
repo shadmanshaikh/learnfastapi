@@ -1,4 +1,4 @@
-from fastapi import FastAPI , Form
+from fastapi import FastAPI , Form , HTTPException
 from pydantic import BaseModel
 import uvicorn
 
@@ -28,9 +28,27 @@ async def addEmp(
     return employee
 
 # PUT request
+class compModel(BaseModel):
+    name : str
+    address : str
+
 companies = {
     0 : {"name" : "sincron" , "address" : "dmcc"},
     1 : {"name" : "drape" , "address" : "jlt"},
 }
 
+@app.put('/api/v1/update_comp/{comp_id}' , response_model=compModel)
+async def updateComp(comp_id : int , comp : compModel):
+    if comp_id not in companies:
+        raise HTTPException(status_code=404 , detail="ID not found")
+    companies[comp_id] =  comp.dict()
+    return companies[comp_id]
+
+# DELETE request 
+@app.delete('/api/v1/delete/{comp_id}')
+async def delComp(comp_id : int):
+    if comp_id not in companies:
+        raise HTTPException(status_code=404 , detail="ID not found")
+    del companies[comp_id]
+    return {"message" : "Deleted the Company Details successfully"} , companies
 
